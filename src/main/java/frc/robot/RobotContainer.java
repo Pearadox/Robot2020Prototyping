@@ -25,8 +25,10 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.commands.HoodedCommandBackward;
 import frc.robot.commands.HoodedCommandForward;
+import frc.robot.commands.WheelFortune;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.FlywheelSubsystem;
+import frc.robot.subsystems.FortuneSubsystem;
 import frc.robot.subsystems.TransportSubsystem;
 
 /**
@@ -41,12 +43,13 @@ public class RobotContainer
     // The robot's subsystems and commands are defined here...
     private final ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
 
-    public final FlywheelSubsystem flywheelSubsystem = FlywheelSubsystem.getInstance();
-    private final TransportSubsystem transportSubsystem = TransportSubsystem.getInstance();
+    // public final FlywheelSubsystem flywheelSubsystem = FlywheelSubsystem.getInstance();
+    // private final TransportSubsystem transportSubsystem = TransportSubsystem.getInstance();
+    private final FortuneSubsystem fortuneSubsystem = FortuneSubsystem.getInstance();
 
-    private final ExampleCommand autonomousCommand = new ExampleCommand(exampleSubsystem);
-    private final HoodedCommandBackward hoodBackCommand = new HoodedCommandBackward(flywheelSubsystem);
-    private final HoodedCommandForward hoodForwCommand = new HoodedCommandForward(flywheelSubsystem);
+    private final WheelFortune autonomousCommand = new WheelFortune(fortuneSubsystem);
+    // private final HoodedCommandBackward hoodBackCommand = new HoodedCommandBackward(flywheelSubsystem);
+    // private final HoodedCommandForward hoodForwCommand = new HoodedCommandForward(flywheelSubsystem);
 
     /**
      * The container for the robot.  Contains subsystems, OI devices, and commands.
@@ -55,7 +58,7 @@ public class RobotContainer
     public RobotContainer()
     {
         SmartDashboard.putData(new InstantCommand(
-            () -> flywheelSubsystem.hoodEncoder.setPosition(0)
+            // () -> flywheelSubsystem.hoodEncoder.setPosition(0)
         ));
         // Configure the button bindings
         configureButtonBindings();
@@ -67,9 +70,9 @@ public class RobotContainer
      * edu.wpi.first.wpilibj.Joystick Joystick} or {@link XboxController}), and then passing it to a
      * {@link edu.wpi.first.wpilibj2.command.button.JoystickButton JoystickButton}.
      */
-    private void configureButtonBindings()
-    {
-        new JoystickButton(joystick, 10).whileHeld(new RunCommand(
+    private void configureButtonBindings() {
+    
+       /* new JoystickButton(joystick, 10).whileHeld(new RunCommand(
             flywheelSubsystem::runPID, flywheelSubsystem))
             .whenReleased(flywheelSubsystem::stop);
 //        new Button() {
@@ -93,7 +96,7 @@ public class RobotContainer
             }
             flywheelSubsystem.setAcceleratorWheel(SmartDashboard.getNumber("accelerator", 0));
             }, flywheelSubsystem
-            )).whenReleased(flywheelSubsystem::stop);
+            )).whenReleased(flywheelSubsystem::stop); */
     }
 
 

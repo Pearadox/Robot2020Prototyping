@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DigitalSource;
+
 public class FlywheelSubsystem extends SubsystemBase {
 
 // Any variables/fields used in the constructor must appear before the "INSTANCE" variable
