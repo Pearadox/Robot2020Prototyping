@@ -13,7 +13,7 @@ public class TransportSubsystem extends SubsystemBase {
 // so that they are initialized before the constructor is called.
 
     private CANSparkMax motor1 = new CANSparkMax(4, CANSparkMaxLowLevel.MotorType.kBrushed);
-    private CANSparkMax motor2 = new CANSparkMax(6, CANSparkMaxLowLevel.MotorType.kBrushed);
+    // private CANSparkMax motor2 = new CANSparkMax(6, CANSparkMaxLowLevel.MotorType.kBrushed);
 
     /**
      * The Singleton instance of this TransportSubsystem. External classes should
@@ -32,7 +32,7 @@ public class TransportSubsystem extends SubsystemBase {
         //       Also, you can call addChild(name, sendableChild) to associate sendables with the subsystem
         //       such as SpeedControllers, Encoders, DigitalInputs, etc.
         motor1.setIdleMode(CANSparkMax.IdleMode.kCoast);
-        motor2.setIdleMode(CANSparkMax.IdleMode.kCoast);
+        // motor2.setIdleMode(CANSparkMax.IdleMode.kCoast);
         SmartDashboard.putNumber("transport", SmartDashboard.getNumber("transport", 0.0));
     }
 
@@ -43,14 +43,14 @@ public class TransportSubsystem extends SubsystemBase {
 
     public void runTransport() {
         motor1.set(SmartDashboard.getNumber("transport", -0.4d));
-        motor2.set(-SmartDashboard.getNumber("transport", -0.4d));
+        // motor2.set(-SmartDashboard.getNumber("transport", -0.4d));
 //        motor1.set(-0.8);
 //        motor2.set(-0.8);
     }
 
     public void stop(){
         motor1.set(0);
-        motor2.set(0);
+        // motor2.set(0);
     }
     /**
      * Returns the Singleton instance of this TransportSubsystem. This static method

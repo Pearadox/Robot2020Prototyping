@@ -1,9 +1,8 @@
 package frc.robot.subsystems;
 
-
-import java.nio.channels.Channel;
-
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.revrobotics.AlternateEncoderType;
 import com.revrobotics.CANEncoder;
@@ -13,6 +12,8 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.CounterBase.EncodingType;
+import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DigitalSource;
 public class FlywheelSubsystem extends SubsystemBase {
@@ -29,14 +30,12 @@ public class FlywheelSubsystem extends SubsystemBase {
     public CANSparkMax acceleratorWheel = new CANSparkMax(2, MotorType.kBrushless);
     private CANEncoder encoder3 = new CANEncoder(acceleratorWheel);
 
-    private CANSparkMax snowBlowerMotor= new CANSparkMax(5, MotorType.kBrushed);
-    public CANEncoder hoodEncoder = new CANEncoder(snowBlowerMotor, EncoderType.kQuadrature, 8192);
-
+    public TalonSRX snowBlowerMotor = new TalonSRX(11);
 
     private double targetRPM = 0;
     private double feedFoward = 0.0023;
 
-    private double hoodDegrees = getHoodEncoder() * (362 / 18);
+    private double hoodDegrees = getHoodAngle();
     private double lastError = 0.0d;
     private double totalError = 0.0d;
     private double snowBlowerPercent = 0.1;
@@ -60,11 +59,14 @@ public class FlywheelSubsystem extends SubsystemBase {
         motor1.setIdleMode(CANSparkMax.IdleMode.kCoast);
         motor2.setIdleMode(CANSparkMax.IdleMode.kCoast);
         acceleratorWheel.setIdleMode(CANSparkMax.IdleMode.kCoast);
-        snowBlowerMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
-        motor1.setSmartCurrentLimit(80);
-        motor2.setSmartCurrentLimit(80);
+        snowBlowerMotor.setNeutralMode(NeutralMode.Brake);
+        motor1.setSmartCurrentLimit(80,5700, 6000);
+        motor2.setSmartCurrentLimit(80, 5700, 6000);
         // hoodEncoder.setPositionConversionFactor(1);
-        SmartDashboard.putNumber("accelerator", 0);
+        // SmartDashboard.putNumber("accelerator", 0);
+        snowBlowerMotor.configFactoryDefault();
+        snowBlowerMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder);
+        snowBlowerMotor.setSelectedSensorPosition(0);
     }
 
     public void setHoodAngle(double hoodAngle) {
@@ -72,14 +74,15 @@ public class FlywheelSubsystem extends SubsystemBase {
     }
 
     public double getHoodAngle() {
-        return hoodAngle;
+        return getHoodEncoder() * (404/20) +5;
     }
+    
     public void setFlywheelSpeed(double rpm) {
         targetRPM = rpm;
     }
 
     public double getHoodEncoder() {
-        return -hoodEncoder.getPosition();
+        return snowBlowerMotor.getSelectedSensorPosition()/8618.5;
     }
     
     public void setAcceleratorWheel(double setSpeed) {
@@ -89,11 +92,19 @@ public class FlywheelSubsystem extends SubsystemBase {
         motor1.set(0);
         motor2.set(0);
         acceleratorWheel.set(0);
-        snowBlowerMotor.set(0);
+        snowBlowerMotor.set(ControlMode.PercentOutput, 0);
     }
 
     public double getRPM() {
         return (encoder1.getVelocity() + encoder2.getVelocity()) / 2;
+    }
+
+    public double getLeftRPM() {
+        return encoder1.getVelocity();
+    }
+
+    public double getRightRPM() {
+        return encoder2.getVelocity();
     }
 
     public double getAccelRPM() {
@@ -101,32 +112,20 @@ public class FlywheelSubsystem extends SubsystemBase {
     }
 
     public void setSnowBlowerMotor(double speed) {
-        snowBlowerMotor.setVoltage(speed * 12);
+        snowBlowerMotor.set(ControlMode.PercentOutput, speed);
     }
 
     @Override
     public void periodic() {
         SmartDashboard.putNumber("target RPM", SmartDashboard.getNumber("target RPM", 2400));
         SmartDashboard.putNumber("current RPM", getRPM());
-        SmartDashboard.putNumber("accelerator", SmartDashboard.getNumber("accelerator", 0.0d)); 
+        // SmartDashboard.putNumber("accelerator", SmartDashboard.getNumber("accelerator", 0.0d)); 
         SmartDashboard.putNumber("feedfoward", SmartDashboard.getNumber("feedfoward", feedFoward)); 
         SmartDashboard.putNumber("bangbang Control", 0.0d);
         SmartDashboard.putNumber("kP", SmartDashboard.getNumber("kP", 0));
         SmartDashboard.putNumber("kD", SmartDashboard.getNumber("kD", 0));
         SmartDashboard.putNumber("current1NEO", motor1.getOutputCurrent());
         SmartDashboard.putNumber("current2NEO", motor2.getOutputCurrent());
-        if (getHoodEncoder() < 0) {
-            SmartDashboard.putNumber("hoodEncoder", 0);
-        }
-        if (getHoodEncoder() > 4) {
-            SmartDashboard.putNumber("hoodEncoder", 4);
-        }
-        if (hoodDegrees > 80) {
-            SmartDashboard.putNumber("hoodDegrees", 80);
-        }
-        if (hoodDegrees < 0) {
-            SmartDashboard.putNumber("hoodDegrees", 0);
-        }
     }
 
     /*
@@ -151,13 +150,12 @@ public class FlywheelSubsystem extends SubsystemBase {
     }*/
 
     public void runPID() {
-        SmartDashboard.putNumber("target RPM", SmartDashboard.getNumber("target RPM", 2400)); //2750
+        SmartDashboard.putNumber("target RPM", SmartDashboard.getNumber("target RPM", 2750)); //2750
         SmartDashboard.putNumber("current RPM", getRPM());
         SmartDashboard.putNumber("feedfoward", SmartDashboard.getNumber("feedfoward", feedFoward)); //0.002300
-        SmartDashboard.putNumber("kP", SmartDashboard.getNumber("kP", 0)); //0.00180
-        SmartDashboard.putNumber("kD", SmartDashboard.getNumber("kD", 0)); //0.004
-        SmartDashboard.putNumber("accelerator", SmartDashboard.getNumber("accelerator", 0.0d)); //0.5
-    
+        SmartDashboard.putNumber("kP", SmartDashboard.getNumber("kP", 0.0018)); //0.00180
+        SmartDashboard.putNumber("kD", SmartDashboard.getNumber("kD", 0.004)); //0.004
+        // SmartDashboard.putNumber("accelerator", SmartDashboard.getNumber("accelerator", 0.0d)); //0.5
 
         //the recovery time in between shots with these values is only 0.6 seconds.
         targetRPM = SmartDashboard.getNumber("target RPM", 0.0d);
@@ -166,7 +164,7 @@ public class FlywheelSubsystem extends SubsystemBase {
         double kP = SmartDashboard.getNumber("kP", 0.0d);
         double kD = SmartDashboard.getNumber("kD", 0.0d);
         
-        acceleratorWheel.set(SmartDashboard.getNumber("accelerator", 0.0d));
+        // acceleratorWheel.set(SmartDashboard.getNumber("accelerator", 0.0d));
         motor1.setVoltage(feedfoward * targetRPM + kP * (targetRPM - currentRPM) + kD * ((targetRPM - currentRPM) - lastError));
         motor2.setVoltage(feedfoward * targetRPM + kP * (targetRPM - currentRPM) + kD * ((targetRPM - currentRPM) - lastError));
         lastError = (targetRPM - currentRPM);

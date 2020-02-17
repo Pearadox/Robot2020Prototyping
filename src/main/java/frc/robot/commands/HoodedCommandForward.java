@@ -38,28 +38,34 @@ public class HoodedCommandForward extends CommandBase
         if (!SmartDashboard.containsKey("hoodDegree")) {
             SmartDashboard.putNumber("hoodDegree", SmartDashboard.getNumber("hoodDegree", 0));
         }
-        flywheelSubsystem.hoodEncoder.setPosition(0);
     }
 
     @Override
     public void initialize() {
-        SmartDashboard.putNumber("hoodEncoder", 80);
+        SmartDashboard.putNumber("hoodDegree", 0);
     }
    
     @Override
     public void execute() {
         SmartDashboard.putNumber("hoodEncoder", flywheelSubsystem.getHoodEncoder());
-        degrees = flywheelSubsystem.getHoodEncoder() * (362/18);
-        SmartDashboard.putNumber("hoodDegree", degrees);
-        flywheelSubsystem.setSnowBlowerMotor(-SmartDashboard.getNumber("snowBlower", 0));
+        degrees = flywheelSubsystem.getHoodAngle();
+        if (degrees <= 5) {
+            SmartDashboard.putNumber("hoodDegree", 5);    
+        }
+        else if (degrees >= 55) {
+            SmartDashboard.putNumber("hoodDegree", 55);
+        }
+        else {
+            SmartDashboard.putNumber("hoodDegree", degrees);
+        }
+        flywheelSubsystem.setSnowBlowerMotor(-SmartDashboard.getNumber("snowBlower", 1));
         degreeError = degrees - lastDegree;
         lastDegree = degrees;
     }
     
     @Override
     public boolean isFinished() {
-        if (degreeError < 10) return true;
-    return false;
+        return false;
     }
 
 

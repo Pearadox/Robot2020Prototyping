@@ -22,9 +22,9 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import frc.robot.commands.ExampleCommand;
 import frc.robot.commands.HoodedCommandBackward;
 import frc.robot.commands.HoodedCommandForward;
+import frc.robot.commands.HoodedSetPoint;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.FlywheelSubsystem;
 import frc.robot.subsystems.TransportSubsystem;
@@ -39,14 +39,13 @@ public class RobotContainer
 {
     Joystick joystick = new Joystick(0);
     // The robot's subsystems and commands are defined here...
-    private final ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
 
     public final FlywheelSubsystem flywheelSubsystem = FlywheelSubsystem.getInstance();
     private final TransportSubsystem transportSubsystem = TransportSubsystem.getInstance();
 
-    private final ExampleCommand autonomousCommand = new ExampleCommand(exampleSubsystem);
     private final HoodedCommandBackward hoodBackCommand = new HoodedCommandBackward(flywheelSubsystem);
     private final HoodedCommandForward hoodForwCommand = new HoodedCommandForward(flywheelSubsystem);
+    private final HoodedSetPoint hoodSetCommand = new HoodedSetPoint(flywheelSubsystem);
 
     /**
      * The container for the robot.  Contains subsystems, OI devices, and commands.
@@ -54,9 +53,9 @@ public class RobotContainer
 
     public RobotContainer()
     {
-        SmartDashboard.putData(new InstantCommand(
-            () -> flywheelSubsystem.hoodEncoder.setPosition(0)
-        ));
+//        SmartDashboard.putData(new InstantCommand(
+//            () -> flywheelSubsystem.hoodEncoder.setPosition(0);
+//        ));
         // Configure the button bindings
         configureButtonBindings();
     }
@@ -94,8 +93,8 @@ public class RobotContainer
             flywheelSubsystem.setAcceleratorWheel(SmartDashboard.getNumber("accelerator", 0));
             }, flywheelSubsystem
             )).whenReleased(flywheelSubsystem::stop);
+        new JoystickButton(joystick, 11).whenPressed(hoodSetCommand);
     }
-
 
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -105,6 +104,6 @@ public class RobotContainer
     public Command getAutonomousCommand()
     {
         // An ExampleCommand will run in autonomous
-        return autonomousCommand;
+        return null;
     }
 }
